@@ -97,7 +97,7 @@ data/processed/
 *.swp
 *.swo
 *~
-.freebuff
+.freebuff/
 
 # OS
 .DS_Store
