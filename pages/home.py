@@ -7,6 +7,9 @@ from utils.sidebar import sidebar_filters
 from utils.formatting import format_inr, format_percent
 from utils.analysis import best_deal_score, add_to_watchlist, remove_from_watchlist, is_in_watchlist, get_watchlist
 
+# Project root directory for resolving image paths
+PROJECT_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+
 
 def main():
     # Load data
@@ -123,11 +126,21 @@ def main():
                             f'<img src="{img_src}" style="width:80px;height:80px;border-radius:12px;object-fit:cover;">',
                             unsafe_allow_html=True,
                         )
-                    elif img_src.startswith("assets/") and os.path.exists(img_src):
-                        # Real downloaded image
-                        st.image(img_src, width=80)
+                    elif img_src.startswith("assets/"):
+                        # Convert relative path to absolute path
+                        abs_path = os.path.join(PROJECT_ROOT, img_src)
+                        if os.path.exists(abs_path):
+                            st.image(abs_path, width=80)
+                        else:
+                            st.markdown(
+                                '<div style="width:80px;height:80px;border-radius:12px;background:#e0e0e0;display:flex;align-items:center;justify-content:center;font-size:24px;">📦</div>',
+                                unsafe_allow_html=True,
+                            )
                     else:
-                        st.image("assets/logo.png", width=80)
+                        st.markdown(
+                            '<div style="width:80px;height:80px;border-radius:12px;background:#e0e0e0;display:flex;align-items:center;justify-content:center;font-size:24px;">📦</div>',
+                            unsafe_allow_html=True,
+                        )
                 else:
                     st.markdown(
                         '<div style="width:80px;height:80px;border-radius:12px;background:#e0e0e0;display:flex;align-items:center;justify-content:center;font-size:24px;">📦</div>',

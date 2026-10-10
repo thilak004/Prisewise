@@ -14,6 +14,9 @@ from utils.analysis import (
 )
 from utils.formatting import format_inr, format_percent, safe_str, is_valid_http_url
 
+# Project root directory for resolving image paths
+PROJECT_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+
 
 # ── cached helpers ──────────────────────────────────────────────────────────
 
@@ -179,10 +182,20 @@ def main():
                                         f'<img src="{img_src}" style="width:120px;height:120px;border-radius:16px;object-fit:cover;">',
                                         unsafe_allow_html=True,
                                     )
-                                elif img_src.startswith("assets/") and os.path.exists(img_src):
-                                    st.image(img_src, width=120)
+                                elif img_src.startswith("assets/"):
+                                    abs_path = os.path.join(PROJECT_ROOT, img_src)
+                                    if os.path.exists(abs_path):
+                                        st.image(abs_path, width=120)
+                                    else:
+                                        st.markdown(
+                                            '<div style="width:120px;height:120px;border-radius:16px;background:#e0e0e0;display:flex;align-items:center;justify-content:center;font-size:40px;">📦</div>',
+                                            unsafe_allow_html=True,
+                                        )
                                 else:
-                                    st.image("assets/logo.png", width=120)
+                                    st.markdown(
+                                        '<div style="width:120px;height:120px;border-radius:16px;background:#e0e0e0;display:flex;align-items:center;justify-content:center;font-size:40px;">📦</div>',
+                                        unsafe_allow_html=True,
+                                    )
                             else:
                                 st.markdown(
                                     '<div style="width:120px;height:120px;border-radius:16px;background:#e0e0e0;display:flex;align-items:center;justify-content:center;font-size:40px;">📦</div>',
