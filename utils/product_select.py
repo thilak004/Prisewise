@@ -69,6 +69,10 @@ def products_overview(df: pd.DataFrame, col_map: dict) -> pd.DataFrame:
     if "price" in col_map and col_map["price"] in overview.columns:
         out["price"] = overview[col_map["price"]]
 
+    # Carry through image_data if it exists
+    if "image_data" in overview.columns:
+        out["image_data"] = overview["image_data"]
+
     # Sort by lowest price if present.
     if "price" in out.columns:
         out = out.sort_values("price", ascending=True, na_position="last")

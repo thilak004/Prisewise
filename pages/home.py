@@ -111,13 +111,32 @@ def main():
     # Display results in a nice format
     for idx, row in display_df.iterrows():
         with st.container():
-            col1, col2, col3, col4, col5 = st.columns([3, 2, 2, 1, 1])
+            col_img, col_info, col_price, col_discount, col_deal, col_wl = st.columns([1, 3, 2, 2, 1, 1])
 
-            with col1:
+            with col_img:
+                # Product image - show real photo if available, else SVG fallback
+                img_src = row.get("image_data", "")
+                if pd.notna(img_src) and isinstance(img_src, str):
+                    if img_src.startswith("data:image"):
+                        # SVG fallback (base64)
+                        st.markdown(
+                            f'<img src="{img_src}" style="width:80px;height:80px;border-radius:12px;object-fit:cover;">',
+                            unsafe_allow_html=True,
+                        )
+                    elif img_src.startswith("assets/") and os.path.exists(img_src):
+                        # Real downloaded image
+                        st.image(img_src, width=80)
+                    else:
+                        st.image("assets/logo.png", width=80)
+                else:
+                    st.markdown(
+                        '<div style="width:80px;height:80px;border-radius:12px;background:#e0e0e0;display:flex;align-items:center;justify-content:center;font-size:24px;">📦</div>',
+                        unsafe_allow_html=True,
+                    )
+
+            with col_info:
                 product_name = row.get("product_name", "Unknown Product")
                 st.write(f"**{product_name}**")
-
-                # Show category and platform if available
                 details = []
                 if "category" in row and pd.notna(row["category"]):
                     details.append(str(row["category"]))
@@ -126,20 +145,19 @@ def main():
                 if details:
                     st.caption(" • ".join(details))
 
-            with col2:
+            with col_price:
                 if "price" in row and pd.notna(row["price"]):
                     st.metric("Price", format_inr(row["price"]))
                 else:
                     st.metric("Price", "N/A")
 
-            with col3:
+            with col_discount:
                 if "discount" in row and pd.notna(row["discount"]):
                     st.metric("Discount", format_percent(row["discount"]))
                 else:
                     st.metric("Discount", "N/A")
 
-            with col4:
-                # ── Feature #2: Best Deal Badge ────────────────────────────
+            with col_deal:
                 deal_info = deal_map.get((row.get("product_name", ""), row.get("platform", "")), None)
                 if deal_info:
                     tier = deal_info["tier"]
@@ -148,8 +166,7 @@ def main():
                 else:
                     st.write("")
 
-            with col5:
-                # ── Feature #15: Watchlist toggle ──────────────────────────
+            with col_wl:
                 product_name = row.get("product_name", "")
                 if is_in_watchlist(product_name):
                     if st.button("Saved", key=f"wl_{idx}", use_container_width=True):
@@ -160,7 +177,6 @@ def main():
                         add_to_watchlist(product_name)
                         st.rerun()
 
-            # View Details button
             if st.button("View Details", key=f"view_{idx}", use_container_width=True):
                 st.session_state.selected_product = row.get("product_name")
                 st.session_state.selected_category = row.get("category") if "category" in row and pd.notna(row["category"]) else None

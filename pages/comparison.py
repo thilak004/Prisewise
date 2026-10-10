@@ -159,7 +159,7 @@ def main():
                         add_to_watchlist(selected_prod)
                         st.rerun()
 
-                # Quick facts from lowest-priced row
+                # Product image + quick facts
                 prod_col = col_map.get("product_name")
                 if prod_col and prod_col in df.columns:
                     product_rows = df[df[prod_col].astype(str) == str(selected_prod)].copy()
@@ -168,22 +168,43 @@ def main():
                         if price_col and price_col in product_rows.columns:
                             product_rows = product_rows.sort_values(price_col, ascending=True, na_position="last")
                         product_row = product_rows.iloc[0]
-                        mc1, mc2, mc3, mc4 = st.columns(4)
-                        with mc1:
-                            cat_col = col_map.get("category")
-                            if cat_col and cat_col in product_row and pd.notna(product_row[cat_col]):
-                                st.metric("Category", safe_str(product_row[cat_col]))
-                        with mc2:
-                            if price_col and price_col in product_row and pd.notna(product_row[price_col]):
-                                st.metric("Best Price", format_inr(product_row[price_col]))
-                        with mc3:
-                            disc_col = col_map.get("discount")
-                            if disc_col and disc_col in product_row and pd.notna(product_row[disc_col]):
-                                st.metric("Discount", format_percent(product_row[disc_col]))
-                        with mc4:
-                            rat_col = col_map.get("rating")
-                            if rat_col and rat_col in product_row and pd.notna(product_row[rat_col]):
-                                st.metric("Rating", f"{product_row[rat_col]:.1f} /5")
+
+                        # Show product image - real photo if available
+                        img_col, info_col = st.columns([1, 4])
+                        with img_col:
+                            img_src = product_row.get("image_data", "")
+                            if pd.notna(img_src) and isinstance(img_src, str):
+                                if img_src.startswith("data:image"):
+                                    st.markdown(
+                                        f'<img src="{img_src}" style="width:120px;height:120px;border-radius:16px;object-fit:cover;">',
+                                        unsafe_allow_html=True,
+                                    )
+                                elif img_src.startswith("assets/") and os.path.exists(img_src):
+                                    st.image(img_src, width=120)
+                                else:
+                                    st.image("assets/logo.png", width=120)
+                            else:
+                                st.markdown(
+                                    '<div style="width:120px;height:120px;border-radius:16px;background:#e0e0e0;display:flex;align-items:center;justify-content:center;font-size:40px;">📦</div>',
+                                    unsafe_allow_html=True,
+                                )
+                        with info_col:
+                            mc1, mc2, mc3, mc4 = st.columns(4)
+                            with mc1:
+                                cat_col = col_map.get("category")
+                                if cat_col and cat_col in product_row and pd.notna(product_row[cat_col]):
+                                    st.metric("Category", safe_str(product_row[cat_col]))
+                            with mc2:
+                                if price_col and price_col in product_row and pd.notna(product_row[price_col]):
+                                    st.metric("Best Price", format_inr(product_row[price_col]))
+                            with mc3:
+                                disc_col = col_map.get("discount")
+                                if disc_col and disc_col in product_row and pd.notna(product_row[disc_col]):
+                                    st.metric("Discount", format_percent(product_row[disc_col]))
+                            with mc4:
+                                rat_col = col_map.get("rating")
+                                if rat_col and rat_col in product_row and pd.notna(product_row[rat_col]):
+                                    st.metric("Rating", f"{product_row[rat_col]:.1f} /5")
 
                 # ── Feature #2: Best Deal Recommendation ──────────────────
                 deal_df = best_deal_score(df, col_map)
