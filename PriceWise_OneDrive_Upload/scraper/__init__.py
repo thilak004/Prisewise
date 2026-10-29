@@ -1,1 +1,0 @@
-"""scraper package for PriceWise."""
